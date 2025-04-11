@@ -88,8 +88,8 @@
         });
 
         const data = await response.json();
-        appendMessage('Bot', data.reply);
-        conversation.push({ role: 'assistant', content: data.reply });
+        appendMessage('Bot', data.reply || "🤖 Je n’ai pas compris la question. Pouvez-vous reformuler ?");
+        conversation.push({ role: 'assistant', content: data.reply || "" });
       } catch (err) {
         appendMessage('Bot', '❌ Erreur lors de la réponse. Réessaie plus tard.');
       }
