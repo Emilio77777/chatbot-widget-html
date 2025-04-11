@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Chatbot</title>
+  <title>Pegasus Bot</title>
   <style>
     body {
       margin: 0;
@@ -10,22 +10,59 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      background: #f2f2f2;
     }
 
     #chat {
       flex: 1;
       display: flex;
       flex-direction: column;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
+    }
+
+    #chat-header {
+      background-color: #002855;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #chat-header img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
     }
 
     #messages {
       flex: 1;
       padding: 10px;
       overflow-y: auto;
-      background: #f9f9f9;
+      background: #fff;
+    }
+
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 80%;
+      line-height: 1.4;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .bot {
+      background: #002855;
+      color: white;
+      align-self: flex-start;
+    }
+
+    .user {
+      background: #e4e4e4;
+      color: #333;
+      align-self: flex-end;
     }
 
     #input-container {
@@ -41,7 +78,7 @@
     }
 
     #send-button {
-      background-color: #007bff;
+      background-color: #002855;
       color: white;
       border: none;
       padding: 10px 20px;
@@ -51,6 +88,10 @@
 </head>
 <body>
   <div id="chat">
+    <div id="chat-header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Golden_pegasus.svg" alt="Logo Pegasus">
+      Pegasus Bot
+    </div>
     <div id="messages"></div>
     <div id="input-container">
       <input type="text" id="user-input" placeholder="Posez une question..." />
@@ -65,8 +106,9 @@
 
     let conversation = [];
 
-    function appendMessage(sender, text) {
+    function appendMessage(sender, text, role) {
       const msg = document.createElement('div');
+      msg.classList.add('message', role);
       msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
       messagesDiv.appendChild(msg);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -76,22 +118,23 @@
       const userMessage = input.value.trim();
       if (!userMessage) return;
 
-      appendMessage('Vous', userMessage);
+      appendMessage('Vous', userMessage, 'user');
       conversation.push({ role: 'user', content: userMessage });
       input.value = '';
 
       try {
-const response = await fetch('https://gpt-chatbot-backend-773i.onrender.com/chat', {
+        const response = await fetch('https://gpt-chatbot-backend-773i.onrender.com/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: conversation })
         });
 
         const data = await response.json();
-        appendMessage('Bot', data.reply || "🤖 Je n’ai pas compris la question. Pouvez-vous reformuler ?");
-        conversation.push({ role: 'assistant', content: data.reply || "" });
+        const botReply = data.reply || "🤖 Je n’ai pas compris. Pouvez-vous reformuler ?";
+        appendMessage('Pegasus Bot', botReply, 'bot');
+        conversation.push({ role: 'assistant', content: botReply });
       } catch (err) {
-        appendMessage('Bot', '❌ Erreur lors de la réponse. Réessaie plus tard.');
+        appendMessage('Pegasus Bot', '❌ Erreur lors de la réponse. Réessaie plus tard.', 'bot');
       }
     }
 
@@ -99,6 +142,13 @@ const response = await fetch('https://gpt-chatbot-backend-773i.onrender.com/chat
     input.addEventListener("keypress", function (e) {
       if (e.key === "Enter") sendMessage();
     });
+
+    // 🟢 Message d’accueil automatique
+    window.onload = () => {
+      const welcome = "Bonjour 👋 Je suis Pegasus Bot, votre assistant IA. Posez-moi vos questions sur nos services ou notre diagnostic gratuit.";
+      appendMessage('Pegasus Bot', welcome, 'bot');
+      conversation.push({ role: 'assistant', content: welcome });
+    };
   </script>
 </body>
 </html>
