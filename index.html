@@ -51,6 +51,7 @@
       max-width: 80%;
       line-height: 1.4;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      white-space: pre-line;
     }
 
     .bot {
@@ -84,6 +85,25 @@
       padding: 10px 20px;
       cursor: pointer;
     }
+
+    /* Animation "en train d’écrire..." */
+    .typing span {
+      animation: blink 1.2s infinite;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0% { opacity: 0.2; }
+      20% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
   </style>
 </head>
 <body>
@@ -105,6 +125,7 @@
     const button = document.getElementById('send-button');
 
     let conversation = [];
+    let typingIndicator;
 
     function appendMessage(sender, text, role) {
       const msg = document.createElement('div');
@@ -122,6 +143,13 @@
       conversation.push({ role: 'user', content: userMessage });
       input.value = '';
 
+      // 👉 Ajout de l’indicateur de saisie animé
+      typingIndicator = document.createElement('div');
+      typingIndicator.classList.add('message', 'bot');
+      typingIndicator.innerHTML = `<strong>Pegasus Bot :</strong> est en train d’écrire<span class="typing">.<span>.</span><span>.</span></span>`;
+      messagesDiv.appendChild(typingIndicator);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
       try {
         const response = await fetch('https://gpt-chatbot-backend-773i.onrender.com/chat', {
           method: 'POST',
@@ -131,9 +159,12 @@
 
         const data = await response.json();
         const botReply = data.reply || "🤖 Je n’ai pas compris. Pouvez-vous reformuler ?";
+
+        typingIndicator.remove();
         appendMessage('Pegasus Bot', botReply, 'bot');
         conversation.push({ role: 'assistant', content: botReply });
       } catch (err) {
+        typingIndicator.remove();
         appendMessage('Pegasus Bot', '❌ Erreur lors de la réponse. Réessaie plus tard.', 'bot');
       }
     }
